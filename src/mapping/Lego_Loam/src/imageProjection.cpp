@@ -324,7 +324,8 @@ void ImageProjection::labelComponents(int row, int col){
     int fromIndX, fromIndY, thisIndX, thisIndY; 
     // bool lineCountFlag[N_SCAN] = {false};
     // bool *lineCountFlag = new bool[N_SCAN];
-    bool lineCountFlag[N_SCAN];
+    std::vector<bool> lineCountFlag;
+    lineCountFlag.assign(N_SCAN, false);
 
     queueIndX[0] = row;
     queueIndY[0] = col;

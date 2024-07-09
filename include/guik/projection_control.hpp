@@ -3,6 +3,9 @@
 
 #include <Eigen/Core>
 
+#undef near
+#undef far
+
 namespace guik {
 
 class ProjectionControl {

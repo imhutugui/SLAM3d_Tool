@@ -26,19 +26,15 @@
 #include <sstream>
 #include <string>
 
-#include <ros/ros.h>
 #include <sensor_msgs/PointCloud2.h>
 #include <sensor_msgs/Imu.h>
 #include <std_msgs/Bool.h>
 #include <std_msgs/Float32.h>
-
-#include <tf/transform_broadcaster.h>
-#include <tf/transform_datatypes.h>
+#include <geometry_msgs/PoseStamped.h>
 
 #include <pcl/io/io.h>
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
-#include <pcl_conversions/pcl_conversions.h>
 
 #include <pcl/registration/ndt.h>
 

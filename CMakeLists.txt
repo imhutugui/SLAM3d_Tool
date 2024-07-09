@@ -1,4 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
+set(VCPKG_ROOT "E:/vcpkg/scripts/buildsystems/vcpkg.cmake" CACHE PATH "")
+set(CMAKE_TOOLCHAIN_FILE ${VCPKG_ROOT})
 project(interactive_slam)
 
 set (IS_VERSION_MAJOR 1)
@@ -6,14 +8,7 @@ set (IS_VERSION_MINOR 0)
 set (IS_VERSION_REVISION 5)
 
 
-if("$ENV{ROS_DISTRO}" STRGREATER "melodic")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
-else()
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-endif()
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/cmake")
-
-# find_package(catkin REQUIRED COMPONENTS roscpp ndt_omp hdl_graph_slam roslib)
+set(CMAKE_CXX_STANDARD 17)
 
 find_package(GLM REQUIRED)
 find_package(OpenGL REQUIRED)
@@ -29,27 +24,7 @@ link_directories(${G2O_LIBRARY_DIRS})
 find_package(OpenCV REQUIRED QUIET)
 find_package(GTSAM REQUIRED QUIET)
 
-add_subdirectory(${PROJECT_SOURCE_DIR}/thirdparty/self_msgs)
-
-find_package(catkin REQUIRED COMPONENTS
-  tf
-  roscpp
-  rospy
-  cv_bridge
-  image_transport
-
-  pcl_ros
-  pcl_conversions
-
-  std_msgs
-  sensor_msgs
-  geometry_msgs
-  nav_msgs
-
-  self_msgs
-)
-
-
+add_subdirectory(thirdparty/ros)
 ###########
 ## Build ##
 ###########
@@ -61,6 +36,14 @@ include_directories(
   thirdparty/imgui/examples
   thirdparty/portable-file-dialogs
   thirdparty/ndt_omp/include
+  thirdparty/ros/include
+  thirdparty/ros/console_bridge/include
+  thirdparty/ros/roscpp_core/cpp_common/include
+  thirdparty/ros/roscpp_core/rostime/include
+  thirdparty/ros/roscpp_core/roscpp_serialization/include
+  thirdparty/ros/roscpp_core/roscpp_traits/include
+  thirdparty/ros/ros_comm/tools/rosbag_storage/include
+  thirdparty/ros/ros_comm/utilities/roslz4/include
   include/mapping/Lego_Loam/include
   include/mapping/NDT/include
   /opt/ros/melodic/include
@@ -83,6 +66,7 @@ if (OPENMP_FOUND)
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 endif()
 
+add_definitions(-D_USE_MATH_DEFINES -DNOMINMAX)
 add_library(ndt_omp STATIC
   thirdparty/ndt_omp/src/pclomp/gicp_omp.cpp
   thirdparty/ndt_omp/src/pclomp/ndt_omp.cpp
@@ -107,8 +91,7 @@ add_library(imgui STATIC
 )
 target_link_libraries(imgui
   ${OPENGL_LIBRARIES}
-  glfw
-  dl
+  glfw3
 )
 
 
@@ -147,7 +130,6 @@ add_library(lego_loam STATIC
   src/mapping/Lego_Loam/src/Scancontext.cpp 
   src/mapping/Lego_Loam/src/utility.cpp
   src/mapping/Lego_Loam/src/dumpGraph.cpp
-  src/mapping/Lego_Loam/src/wheelOdometry.cpp
 )
 
 target_link_libraries(lego_loam
@@ -156,6 +138,8 @@ target_link_libraries(lego_loam
     gtsam
     Eigen3::Eigen
 )
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W3 /O2 /bigobj")
 
 add_executable(interactive_slam
   src/interactive_slam.cpp
@@ -189,12 +173,14 @@ target_link_libraries(interactive_slam
   ${G2O_TYPES_SLAM3D_ADDONS}
   ${OPENGL_LIBRARIES}
   ${catkin_LIBRARIES}
-  glfw
+  ${BZIP2_LIBRARIES} ${lz4_LIBRARIES}
   guik
   imgui
   ndt_omp
   lego_loam
   ndt
+  rosbag
+  g2o::core g2o::stuff g2o::types_icp g2o::types_sba g2o::types_slam3d g2o::types_slam3d_addons g2o::solver_pcg g2o::solver_csparse g2o::solver_cholmod
 )
 
 file(COPY data DESTINATION .)

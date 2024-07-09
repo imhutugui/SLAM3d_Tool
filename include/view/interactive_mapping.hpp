@@ -25,7 +25,10 @@ class VertexSE3Edge;
 class InformationMatrixCalculator;
 
 
-
+inline void usleep(unsigned long usec)
+{
+  std::this_thread::sleep_for(std::chrono::microseconds(usec));
+}
 
 
 /**

@@ -279,7 +279,7 @@ void ManualLoopCloseModal::auto_align() {
         relative.matrix() = align.getFinalTransformation().cast<double>();
         auto_alignment_progress = 5;
 
-        usleep(500000);
+        Sleep(500000 / 1000);
 
         return std::make_shared<Eigen::Isometry3d>(relative);
       });

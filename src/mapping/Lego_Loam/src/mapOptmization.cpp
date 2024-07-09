@@ -596,7 +596,7 @@ void mapOptimization::loopClosureThread(){
 
 
     while (m_bLoopThread){
-        sleep(1);
+        Sleep(1000);
         performLoopClosure();
     }
 } // loopClosureThread

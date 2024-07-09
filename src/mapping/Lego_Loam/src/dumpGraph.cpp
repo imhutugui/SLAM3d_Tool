@@ -5,6 +5,7 @@
 #include <pcl/common/transforms.h>
 
 #include <boost/filesystem.hpp>
+#include <boost/format.hpp>
 #include <gtsam/geometry/Pose3.h>
 #include <gtsam/slam/BetweenFactor.h>
 

@@ -3,7 +3,6 @@
 #include <chrono>
 #include <boost/filesystem.hpp>
 
-#include <pcl_conversions/pcl_conversions.h>
 #include <pcl/visualization/cloud_viewer.h>
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
@@ -16,16 +15,14 @@
 #include "featureAssociation.h"
 #include "mapOptmization.h"
 #include "dumpGraph.h"
-#include "wheelOdometry.h"
 
 #include "ndt_mapping.h"
 // #define USENDTODOM
-#define USEWHEELODOM
+//#define USEWHEELODOM
 
 lego_loam::ImageProjection image;
 lego_loam::FeatureAssociation feature;
 lego_loam::mapOptimization mapOpt;
-lego_loam::WheelOdometry wheelOdm;
 
 ndt_odometry::ndt_mapping ndtOdom;
 
@@ -100,7 +97,7 @@ void InteractiveMapping::mapping()
       {
           pcl::PCLPointCloud2 *pointCloud2 = new pcl::PCLPointCloud2;
           sensor_msgs::PointCloud2ConstPtr pclmsg = m.instantiate<sensor_msgs::PointCloud2>();
-          pcl_conversions::toPCL(*pclmsg, *pointCloud2);
+          //pcl_conversions::toPCL(*pclmsg, *pointCloud2);
           pcl::PointCloud<pcl::PointXYZI> pcs;
           pcl::fromPCLPointCloud2(*pointCloud2, pcs);
 
@@ -174,24 +171,6 @@ void InteractiveMapping::mapping()
 
           delete pointCloud2;
       }
-      if(topic == "/wheel_speed")
-      {
-        cout << "wheel_speed " << endl;
-        self_msgs::wheel_speed::ConstPtr msg = m.instantiate<self_msgs::wheel_speed>();
-        wheelOdm.MsgWheelSpeed(msg);
-      }
-      if(topic == "/wheel_rear_left_dir")
-      {
-        cout << "wheel_rear_left_dir " << endl;
-        std_msgs::Int32::ConstPtr msg = m.instantiate<std_msgs::Int32>();
-        wheelOdm.MsgWheelRLDir(msg);
-      }
-      if(topic == "/wheel_rear_right_dir")
-      {
-        cout << "wheel_rear_right_dir " << endl;
-        std_msgs::Int32::ConstPtr msg = m.instantiate<std_msgs::Int32>();
-        wheelOdm.MsgWheelRRDir(msg);
-      }
     }
     usleep(100);
   }
@@ -208,7 +187,7 @@ bool InteractiveMapping::load_raw_data(const std::string& directory, guik::Progr
   for(int i = 0; i < 3; i++)
   {
     progress.increment();
-    sleep(1);
+    Sleep(1);
   } 
 
   return true;

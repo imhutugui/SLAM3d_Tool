@@ -102,14 +102,14 @@ void ndt_mapping::ndt_odometry(const sensor_msgs::PointCloud2::ConstPtr& input, 
   pcl::PointCloud<pcl::PointXYZI> tmp, scan;
   pcl::PointCloud<pcl::PointXYZI>::Ptr filtered_scan_ptr(new pcl::PointCloud<pcl::PointXYZI>());
   pcl::PointCloud<pcl::PointXYZI>::Ptr transformed_scan_ptr(new pcl::PointCloud<pcl::PointXYZI>());
-  tf::Quaternion q;
+  Eigen::Quaterniond q;
 
   Eigen::Matrix4f t_localizer(Eigen::Matrix4f::Identity());
   Eigen::Matrix4f t_base_link(Eigen::Matrix4f::Identity());
   //static tf::TransformBroadcaster br;
   // tf::Transform transform;
 
-  pcl::fromROSMsg(*input, tmp);
+  //pcl::fromROSMsg(*input, tmp);
   double r;
   Eigen::Vector3d point_pos;
   pcl::PointXYZI p;
@@ -204,16 +204,16 @@ void ndt_mapping::ndt_odometry(const sensor_msgs::PointCloud2::ConstPtr& input, 
 
   pcl::transformPointCloud(*scan_ptr, *transformed_scan_ptr, t_localizer);
 
-  tf::Matrix3x3 mat_b;
-  mat_b.setValue(static_cast<double>(t_base_link(0, 0)), static_cast<double>(t_base_link(0, 1)),
-                 static_cast<double>(t_base_link(0, 2)), static_cast<double>(t_base_link(1, 0)),
-                 static_cast<double>(t_base_link(1, 1)), static_cast<double>(t_base_link(1, 2)),
-                 static_cast<double>(t_base_link(2, 0)), static_cast<double>(t_base_link(2, 1)),
-                 static_cast<double>(t_base_link(2, 2)));
+  Eigen::Matrix3d mat_b;
+  //mat_b.setValue(static_cast<double>(t_base_link(0, 0)), static_cast<double>(t_base_link(0, 1)),
+  //               static_cast<double>(t_base_link(0, 2)), static_cast<double>(t_base_link(1, 0)),
+  //               static_cast<double>(t_base_link(1, 1)), static_cast<double>(t_base_link(1, 2)),
+  //               static_cast<double>(t_base_link(2, 0)), static_cast<double>(t_base_link(2, 1)),
+  //               static_cast<double>(t_base_link(2, 2)));
 
   // Update current_pose_.
   current_pose_.x = t_base_link(0, 3);current_pose_.y = t_base_link(1, 3);current_pose_.z = t_base_link(2, 3);
-  mat_b.getRPY(current_pose_.roll, current_pose_.pitch, current_pose_.yaw, 1);//mat2rpy
+  //mat_b.getRPY(current_pose_.roll, current_pose_.pitch, current_pose_.yaw, 1);//mat2rpy
 
   PoseAftNdtOdom[0] = current_pose_.roll;
   PoseAftNdtOdom[1] = current_pose_.pitch;
@@ -236,8 +236,8 @@ void ndt_mapping::ndt_odometry(const sensor_msgs::PointCloud2::ConstPtr& input, 
     previous_pose_.roll = current_pose_.roll;previous_pose_.pitch = current_pose_.pitch;previous_pose_.yaw = current_pose_.yaw;
     ndt.setInputTarget(map_ptr);
 
-    sensor_msgs::PointCloud2::Ptr map_msg_ptr(new sensor_msgs::PointCloud2);
-    pcl::toROSMsg(*map_ptr, *map_msg_ptr);
+    //sensor_msgs::PointCloud2::Ptr map_msg_ptr(new sensor_msgs::PointCloud2);
+    //pcl::toROSMsg(*map_ptr, *map_msg_ptr);
     // ndt_map_pub_.publish(*map_msg_ptr);
   }
 
