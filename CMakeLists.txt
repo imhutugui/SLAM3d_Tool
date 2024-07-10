@@ -91,7 +91,7 @@ add_library(imgui STATIC
 )
 target_link_libraries(imgui
   ${OPENGL_LIBRARIES}
-  glfw3
+  glfw
 )
 
 
@@ -174,6 +174,7 @@ target_link_libraries(interactive_slam
   ${OPENGL_LIBRARIES}
   ${catkin_LIBRARIES}
   ${BZIP2_LIBRARIES} ${lz4_LIBRARIES}
+  glfw
   guik
   imgui
   ndt_omp

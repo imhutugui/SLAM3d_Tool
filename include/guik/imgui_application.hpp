@@ -7,7 +7,7 @@
 #include <GL/gl3w.h>
 #include <Eigen/Core>
 
-class GLFWwindow;
+struct GLFWwindow;
 
 namespace guik {
 class Application {
