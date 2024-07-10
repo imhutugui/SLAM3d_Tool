@@ -9,6 +9,7 @@ namespace glk {
 
 class Cube {
 public:
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   Cube() {
     //   6 ------ 7     X
     //  /|       /|     |

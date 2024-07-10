@@ -24,6 +24,7 @@ public:
 
 struct PlaneDetectionResult {
 public:
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   using Ptr = std::shared_ptr<PlaneDetectionResult>;
 
   std::vector<InteractiveKeyFrame::Ptr> candidates;

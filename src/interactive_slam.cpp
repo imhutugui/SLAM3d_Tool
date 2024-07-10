@@ -29,6 +29,7 @@ namespace hdl_graph_slam {
 
 class InteractiveSLAMApplication : public guik::Application {
 public:
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   InteractiveSLAMApplication() : Application() {}
   ~InteractiveSLAMApplication() {}
 

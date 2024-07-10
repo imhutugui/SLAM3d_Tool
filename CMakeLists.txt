@@ -13,7 +13,7 @@ set(CMAKE_CXX_STANDARD 17)
 find_package(GLM REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(PCL REQUIRED)
-
+find_package(glfw3 CONFIG REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(Boost REQUIRED filesystem program_options)
 
@@ -139,7 +139,7 @@ target_link_libraries(lego_loam
     Eigen3::Eigen
 )
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W3 /O2 /bigobj")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W3 /bigobj")
 
 add_executable(interactive_slam
   src/interactive_slam.cpp

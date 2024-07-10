@@ -8,6 +8,7 @@ namespace glk {
 
 class Grid {
 public:
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   Grid(double half_extent = 5.0, double step = 1.0) {
     for(double x = -half_extent; x <= half_extent + 1e-9; x+=step) {
       vertices.push_back(Eigen::Vector3f(x, -half_extent, 0.0f));

@@ -18,6 +18,7 @@ namespace guik {
  */
 class GLCanvas {
 public:
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   GLCanvas(const std::string& data_directory, const Eigen::Vector2i& size);
 
   bool ready() const;

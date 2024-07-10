@@ -56,6 +56,7 @@ std::vector<float> eig2stdvec( MatrixXd _eigmat );
 class SCManager
 {
 public: 
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     SCManager( ) = default; // reserving data space (of std::vector) could be considered. but the descriptor is lightweight so don't care.
 
     Eigen::MatrixXd makeScancontext( pcl::PointCloud<SCPointType> & _scan_down );
@@ -95,9 +96,9 @@ public:
 
     // data 
     std::vector<double> polarcontexts_timestamp_; // optional.
-    std::vector<Eigen::MatrixXd> polarcontexts_;
-    std::vector<Eigen::MatrixXd> polarcontext_invkeys_;
-    std::vector<Eigen::MatrixXd> polarcontext_vkeys_;
+    std::vector<Eigen::MatrixXd, Eigen::aligned_allocator<Eigen::MatrixXd>> polarcontexts_;
+    std::vector<Eigen::MatrixXd, Eigen::aligned_allocator<Eigen::MatrixXd>> polarcontext_invkeys_;
+    std::vector<Eigen::MatrixXd, Eigen::aligned_allocator<Eigen::MatrixXd>> polarcontext_vkeys_;
 
     KeyMat polarcontext_invkeys_mat_;
     KeyMat polarcontext_invkeys_to_search_;

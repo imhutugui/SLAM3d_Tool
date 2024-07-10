@@ -12,6 +12,7 @@ namespace glk {
 
 class CoordinateSystem {
 public:
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   CoordinateSystem() {
     vertices.push_back(Eigen::Vector3f::Zero());
     vertices.push_back(Eigen::Vector3f::UnitX());

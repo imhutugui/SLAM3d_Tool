@@ -45,6 +45,7 @@ namespace ndt_odometry
 class ndt_mapping
 {
 public:
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   ndt_mapping();
   ~ndt_mapping();
 

@@ -13,6 +13,7 @@ namespace glk {
  */
 class Flatize {
 public:
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   Flatize(const std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f>>& vertices_, const std::vector<int>& indices_) {
     vertices.resize(indices_.size());
     normals.resize(indices_.size());

@@ -9,6 +9,7 @@ namespace glk {
 
 class Icosahedron {
 public:
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   Icosahedron() {
     double t = (1.0 + std::sqrt(5.0)) / 2.0;
 

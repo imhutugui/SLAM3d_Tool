@@ -9,6 +9,7 @@ namespace glk {
 
 class Cone {
 public:
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   Cone(int div=10) {
     vertices.push_back(Eigen::Vector3f::Zero());
     vertices.push_back(Eigen::Vector3f::UnitZ());
