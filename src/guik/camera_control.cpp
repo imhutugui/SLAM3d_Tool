@@ -60,7 +60,14 @@ Eigen::Matrix4f ArcCameraControl::view_matrix() const {
   Eigen::Vector3f eye = center + offset;
 
   glm::mat4 mat = glm::lookAt(glm::vec3(eye[0], eye[1], eye[2]), glm::vec3(center[0], center[1], center[2]), glm::vec3(0.0f, 0.0f, 1.0f));
-  return Eigen::Map<Eigen::Matrix4f>(glm::value_ptr(mat));
+  Eigen::Matrix4f res;
+  for (int i = 0; i < 4; i++) {
+    for (int j = 0; j < 4; j++) {
+      res(j, i) = mat[i][j];
+    }
+  }
+  return res;
+  //return Eigen::Map<Eigen::Matrix4f>(glm::value_ptr(mat));
 }
 
 }  // namespace guik
