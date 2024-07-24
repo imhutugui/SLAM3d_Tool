@@ -1,0 +1,88 @@
+dlo:
+
+  version: 1.4.3
+
+  adaptiveParams: true
+
+  imu: true
+  gravityAlign: true
+
+  odomNode:
+    odom_frame: odom
+    child_frame: base_link
+    initialPose:
+      use: false
+      position:
+        x: 0.0
+        y: 0.0
+        z: 0.0
+      orientation:
+        w: 1.0
+        x: 0.0
+        y: 0.0
+        z: 0.0
+
+    preprocessing:
+      cropBoxFilter:
+        use: true
+        size: 1.0
+      voxelFilter:
+        scan:
+          use: true
+          res: 0.2
+        submap:
+          use: true
+          res: 0.4
+
+    keyframe:
+      threshD: 0.5
+      threshR: 45.0
+
+    submap:
+      keyframe:
+        knn: 10
+        kcv: 10
+        kcc: 10
+
+    imu:
+      calibTime: 3
+      bufferSize: 2000
+
+    gicp:
+      minNumPoints: 50
+      s2s:
+        kCorrespondences: 10
+        maxCorrespondenceDistance: 1.0
+        maxIterations: 64
+        transformationEpsilon: 0.005
+        euclideanFitnessEpsilon: 0.01
+        ransac:
+          iterations: 5
+          outlierRejectionThresh: 1.0
+      s2m:
+        kCorrespondences: 20
+        maxCorrespondenceDistance: 0.5
+        maxIterations: 64
+        transformationEpsilon: 0.005
+        euclideanFitnessEpsilon: 0.01
+        ransac:
+          iterations: 5
+          outlierRejectionThresh: 1.0
+
+  mapNode:
+    publishFullMap: true
+    publishFreq: 1.0
+    leafSize: 0.4
+
+  alaserPGO:
+    save_directory: /home/south/temp/sc-dlo/
+    save_map: true
+
+    scan_filter_size: 0.2
+    mapviz_filter_size: 0.2
+
+    keyframe_meter_gap: 2.0
+    keyframe_deg_gap: 10.0
+
+    sc_dist_thres: 0.2
+    sc_max_radius: 80.0
