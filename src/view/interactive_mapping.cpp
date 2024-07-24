@@ -11,9 +11,9 @@
 #include <rosbag/view.h>
 #include <sensor_msgs/PointCloud2.h>
 
-#include "imageProjection.h"
-#include "featureAssociation.h"
-#include "mapOptmization.h"
+// #include "imageProjection.h"
+// #include "featureAssociation.h"
+// #include "mapOptmization.h"
 #include "dumpGraph.h"
 
 #include "ndt_mapping.h"
@@ -23,9 +23,9 @@
 // #define USENDTODOM
 //#define USEWHEELODOM
 
-lego_loam::ImageProjection image;
-lego_loam::FeatureAssociation feature;
-lego_loam::mapOptimization mapOpt;
+// lego_loam::ImageProjection image;
+// lego_loam::FeatureAssociation feature;
+// lego_loam::mapOptimization mapOpt;
 
 ndt_odometry::ndt_mapping ndtOdom;
 
@@ -63,14 +63,15 @@ bool InteractiveMapping::stop_mapping()
   if (running) {
       running = false;
       
-      mapOpt.endLoopClosure();
+    //   mapOpt.endLoopClosure();
       std::lock_guard<std::mutex> lock(mapping_mutex);
-      dump("/tmp/dump", *(mapOpt.isam), mapOpt.isamCurrentEstimate, mapOpt.keyframeStamps, mapOpt.cornerCloudKeyFrames, mapOpt.surfCloudKeyFrames, mapOpt.outlierCloudKeyFrames);
-      mapOpt.allocateMemory();
-      image.resetParameters();
+    //   dump("/tmp/dump", *(mapOpt.isam), mapOpt.isamCurrentEstimate, mapOpt.keyframeStamps, mapOpt.cornerCloudKeyFrames, mapOpt.surfCloudKeyFrames, mapOpt.outlierCloudKeyFrames);
+    //   mapOpt.allocateMemory();
+    //   image.resetParameters();
 
-      mapOpt.gtSAMgraph.print();
-      mapping_thread.join();
+    //   mapOpt.gtSAMgraph.print();
+    //   mapping_thread.join();
+    pgoMapOpt.stopLoopDetection();
       std::cout << "end mapping!" << std::endl;
     }
   return true;
@@ -90,8 +91,8 @@ void InteractiveMapping::mapping()
   KDBindings::Signal<sensor_msgs::PointCloud2ConstPtr&> cloud_signal;
   KDBindings::Signal<sensor_msgs::ImuConstPtr&> imu_signal;
 
-  cloud_signal.connect(&dlio::OdomNode::callbackPointCloud, &odomNode);
-  imu_signal.connect(&dlio::OdomNode::callbackImu, &odomNode);
+//   cloud_signal.connect(&dlio::OdomNode::callbackPointCloud, &odomNode);
+//   imu_signal.connect(&dlio::OdomNode::callbackImu, &odomNode);
   odomNode.odom_signal.connect(&pgo::MapOptimization::laserOdometryHandler, &pgoMapOpt);
   odomNode.loop_cloud_signal.connect(&pgo::MapOptimization::laserCloudFullResHandler, &pgoMapOpt);
   odomNode.keyframe_signal.connect([&](const nav_msgs::Odometry::ConstPtr& odom_msg, const sensor_msgs::PointCloud2ConstPtr& cloud_msg) {
@@ -111,7 +112,12 @@ void InteractiveMapping::mapping()
   });
   
   int keycount = 0;
-  mapOpt.startLoopClosure();
+//   mapOpt.startLoopClosure();
+odomNode.start();
+pgoMapOpt.startLoopDetection();
+
+  std::future<void> cloud_future;
+  std::future<void> imu_future;
 
   while (running) 
   {
@@ -122,15 +128,19 @@ void InteractiveMapping::mapping()
       keycount++;
       std::string topic = m.getTopic();
 
-      if(topic == "/rslidar_points")
+      if(topic == lidar_topic)
       {
           pcl::PCLPointCloud2 *pointCloud2 = new pcl::PCLPointCloud2;
           sensor_msgs::PointCloud2ConstPtr pclmsg = m.instantiate<sensor_msgs::PointCloud2>();
           //pcl_conversions::toPCL(*pclmsg, *pointCloud2);
           pcl::PointCloud<pcl::PointXYZI> pcs;
           pcl::fromPCLPointCloud2(*pointCloud2, pcs);
+          if (cloud_future.valid() && cloud_future.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
+              cloud_future.wait();
+          }
+          cloud_future = std::async(std::launch::async, &dlio::OdomNode::callbackPointCloud, &odomNode, pclmsg);
 
-          pcl::PointCloud<pcl::PointXYZI> mapCornerCloud, mapSurfCloud, nullCloud;
+ /*         pcl::PointCloud<pcl::PointXYZI> mapCornerCloud, mapSurfCloud, nullCloud;
           float PoseAftMapped[6];
           float PoseAftNdtOdom[6];
 #ifdef USENDTODOM
@@ -198,7 +208,14 @@ void InteractiveMapping::mapping()
           // std::cout << "WheelOdom: " << "x: " << fx << ", y: " << fy << ", thita: " << fthita << endl;
           // std::cout << "LidarOdom: " << "x: " << PoseAftMapped[5] << ", y: " << PoseAftMapped[3] << endl;
 
-          delete pointCloud2;
+          delete pointCloud2;*/
+      } else if (topic == imu_topic)
+      {
+          sensor_msgs::ImuPtr imu_msg = m.instantiate<sensor_msgs::Imu>();
+          if (imu_future.valid() && imu_future.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
+              imu_future.wait();
+          }
+          imu_future = std::async(std::launch::async, &dlio::OdomNode::callbackImu, &odomNode, imu_msg);
       }
     }
     usleep(100);

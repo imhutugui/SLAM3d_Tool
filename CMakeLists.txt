@@ -203,7 +203,7 @@ target_link_libraries(interactive_slam
   guik
   imgui
   ndt_omp
-  lego_loam
+#   lego_loam
   sc_dlio
   ndt
   rosbag

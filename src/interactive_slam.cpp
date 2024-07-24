@@ -48,6 +48,7 @@ public:
 
     show_imgui_demo = false;
     show_draw_config_window = false;
+    show_mapping_settings = false;
 
     right_clicked_pos.setZero();
     progress.reset(new guik::ProgressModal("progress modal"));
@@ -338,6 +339,9 @@ private:
 
     /*** Mapping menu ***/
     if(ImGui::BeginMenu("Mapping")) {
+        if (ImGui::MenuItem("Mapping Settings")) {
+            show_mapping_settings = true;
+        }
       if(ImGui::MenuItem("Start Mapping")) {
         start_mapping();
       }
@@ -367,6 +371,9 @@ private:
       version_modal->open();
     }
     version_modal->run();
+    if (show_mapping_settings) {
+        mapping_settings(show_mapping_settings);
+    }
 
     ImGui::EndMainMenuBar();
   }
@@ -430,16 +437,34 @@ private:
         mappinggraph->set_lidar_topic(std::string("velodyne_points"));
         ImGui::Combo("IMU", &lidar_idx, "imu\0");
         mappinggraph->set_imu_topic(std::string("imu"));
-
       } else {
-        const char* items[50];
-        
+        static ImGuiComboFlags flags;
+        static const char* current_lidar = bag_topics.at(0).c_str();
+        static const char* current_imu = bag_topics.at(0).c_str();
+        if (ImGui::BeginCombo("Lidar", current_lidar, flags)) {
+            for (size_t i = 0; i < bag_topics.size(); i++) {
+                if (ImGui::Selectable(bag_topics.at(i).c_str(), current_lidar == bag_topics.at(i).c_str())) {
+                    current_lidar = bag_topics.at(i).c_str();
+                    mappinggraph->set_lidar_topic(bag_topics.at(i));
+                }
+            }
+            ImGui::EndCombo();
+        }
+        if (ImGui::BeginCombo("IMU", current_imu, flags)) {
+            for (size_t  i = 0; i < bag_topics.size(); i++)
+            {
+                if (ImGui::Selectable(bag_topics.at(i).c_str(), current_imu == bag_topics.at(i).c_str())) {
+                    current_imu = bag_topics.at(i).c_str();
+                    mappinggraph->set_imu_topic(bag_topics.at(i));
+                }
+            }
+            ImGui::EndCombo();
+        }
       }
+      if (ImGui::Button("Close")) {ImGui::CloseCurrentPopup();}
       ImGui::EndPopup();
-        
     }
   }
-
   /**
    * @brief open raw data
    * @param open_dialog
@@ -888,6 +913,7 @@ private:
 
   bool show_imgui_demo;
   bool show_draw_config_window;
+  bool show_mapping_settings;
   std::unique_ptr<VersionModal> version_modal;
   std::unique_ptr<GraphEditWindow> graph_edit_window;
   std::unique_ptr<PlaneDetectionWindow> plane_detection_window;
