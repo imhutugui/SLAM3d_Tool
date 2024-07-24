@@ -4,20 +4,42 @@
 #pragma once
 
 #include <ctime>
-#include <iostream>
-#include <string>
 #include <cstdlib>
 #include <chrono>
 
 class TicToc
 {
-public:
+  public:
     TicToc()
     {
         tic();
     }
 
-    TicToc( bool _disp )
+    void tic()
+    {
+        start = std::chrono::system_clock::now();
+    }
+
+    double toc()
+    {
+        end = std::chrono::system_clock::now();
+        std::chrono::duration<double> elapsed_seconds = end - start;
+        return elapsed_seconds.count() * 1000;
+    }
+
+  private:
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+};
+
+class TicTocV2
+{
+public:
+    TicTocV2()
+    {
+        tic();
+    }
+
+    TicTocV2( bool _disp )
     {
         disp_ = _disp;
         tic();

@@ -12,10 +12,11 @@ set(CMAKE_CXX_STANDARD 17)
 
 find_package(GLM REQUIRED)
 find_package(OpenGL REQUIRED)
-find_package(PCL REQUIRED)
+find_package(PCL CONFIG REQUIRED)
 find_package(glfw3 CONFIG REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(Boost REQUIRED filesystem program_options)
+find_package(yaml-cpp CONFIG REQUIRED)
 
 find_package(G2O REQUIRED)
 include_directories(SYSTEM ${G2O_INCLUDE_DIR} ${G2O_INCLUDE_DIRS})
@@ -35,6 +36,7 @@ include_directories(
   thirdparty/imgui
   thirdparty/imgui/examples
   thirdparty/portable-file-dialogs
+  thirdparty/KDBindings
   thirdparty/ndt_omp/include
   thirdparty/ros/include
   thirdparty/ros/console_bridge/include
@@ -44,8 +46,10 @@ include_directories(
   thirdparty/ros/roscpp_core/roscpp_traits/include
   thirdparty/ros/ros_comm/tools/rosbag_storage/include
   thirdparty/ros/ros_comm/utilities/roslz4/include
+  include/utils
   include/mapping/Lego_Loam/include
   include/mapping/NDT/include
+  include/mapping/SC-DLO/include
   /opt/ros/melodic/include
   ${GLM_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIRS}
@@ -132,14 +136,35 @@ add_library(lego_loam STATIC
   src/mapping/Lego_Loam/src/dumpGraph.cpp
 )
 
-target_link_libraries(lego_loam
+target_link_libraries(lego_loam PRIVATE
     ${PCL_LIBRARIES} 
     ${OpenCV_LIBRARIES} 
-    gtsam
     Eigen3::Eigen
+    # ${GTSAM_LIBRARIES}
 )
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W3 /bigobj")
+
+add_library(nanoflann STATIC
+    src/mapping/SC-DLO/src/nano_gicp/nanoflann.cc 
+)
+target_link_libraries(nanoflann ${PCL_LIBRARIES})
+target_include_directories(nanoflann PUBLIC include ${PCL_INCLUDE_DIRS})
+
+add_library(nano_gicp STATIC 
+    src/mapping/SC-DLO/src/nano_gicp/lsq_registration.cc 
+    src/mapping/SC-DLO/src/nano_gicp/nano_gicp.cc
+)
+target_link_libraries(nano_gicp ${PCL_LIBRARIES} ${OpenMP_LIBS} nanoflann)
+target_include_directories(nano_gicp PUBLIC include ${PCL_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIRS})
+
+add_library(sc_dlio STATIC 
+    src/mapping/SC-DLO/src/dlo/odom.cc 
+    src/mapping/SC-DLO/src/Scancontext.cpp 
+    src/mapping/SC-DLO/src/laserPosegraphOptimization.cpp
+)
+target_link_libraries(sc_dlio PRIVATE ${PCL_LIBRARIES} ${OpenMP_LIBS} gtsam nanoflann nano_gicp yaml-cpp::yaml-cpp)
+target_include_directories(sc_dlio PUBLIC include ${PCL_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIRS})
 
 add_executable(interactive_slam
   src/interactive_slam.cpp
@@ -179,6 +204,7 @@ target_link_libraries(interactive_slam
   imgui
   ndt_omp
   lego_loam
+  sc_dlio
   ndt
   rosbag
   g2o::core g2o::stuff g2o::types_icp g2o::types_sba g2o::types_slam3d g2o::types_slam3d_addons g2o::solver_pcg g2o::solver_csparse g2o::solver_cholmod

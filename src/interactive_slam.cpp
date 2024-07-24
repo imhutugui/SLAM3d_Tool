@@ -421,6 +421,25 @@ private:
     mappinggraph->stop_mapping();
   }
 
+  void mapping_settings(bool& show_) {
+    ImGui::OpenPopup("Mapping settings");
+    if (ImGui::BeginPopupModal("Mapping settings", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+      if(bag_topics.size() == 0) {
+        static int lidar_idx = 0;
+        ImGui::Combo("Lidar", &lidar_idx, "velodyne_points\0");
+        mappinggraph->set_lidar_topic(std::string("velodyne_points"));
+        ImGui::Combo("IMU", &lidar_idx, "imu\0");
+        mappinggraph->set_imu_topic(std::string("imu"));
+
+      } else {
+        const char* items[50];
+        
+      }
+      ImGui::EndPopup();
+        
+    }
+  }
+
   /**
    * @brief open raw data
    * @param open_dialog
@@ -876,6 +895,8 @@ private:
   std::unique_ptr<ManualLoopCloseModal> manual_loop_close_modal;
   std::unique_ptr<AutomaticLoopCloseWindow> automatic_loop_close_window;
   std::unique_ptr<EdgeRefinementWindow> edge_refinement_window;
+
+  std::vector<std::string> bag_topics;
 };
 
 }  // namespace hdl_graph_slam

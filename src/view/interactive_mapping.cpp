@@ -17,6 +17,9 @@
 #include "dumpGraph.h"
 
 #include "ndt_mapping.h"
+#include "dlo/odom.h"
+#include "laserPosegraphOptimization.h"
+#include "kdbindings/signal.h"
 // #define USENDTODOM
 //#define USEWHEELODOM
 
@@ -25,6 +28,9 @@ lego_loam::FeatureAssociation feature;
 lego_loam::mapOptimization mapOpt;
 
 ndt_odometry::ndt_mapping ndtOdom;
+
+dlio::OdomNode odomNode;
+pgo::MapOptimization pgoMapOpt;
 
 std::string file_directory;
 
@@ -62,6 +68,8 @@ bool InteractiveMapping::stop_mapping()
       dump("/tmp/dump", *(mapOpt.isam), mapOpt.isamCurrentEstimate, mapOpt.keyframeStamps, mapOpt.cornerCloudKeyFrames, mapOpt.surfCloudKeyFrames, mapOpt.outlierCloudKeyFrames);
       mapOpt.allocateMemory();
       image.resetParameters();
+
+      mapOpt.gtSAMgraph.print();
       mapping_thread.join();
       std::cout << "end mapping!" << std::endl;
     }
@@ -73,13 +81,34 @@ void InteractiveMapping::mapping()
   rosbag::Bag bag;
   bag.open(file_directory, rosbag::bagmode::Read);
   std::vector<std::string> topics;
-  topics.push_back(std::string("/rslidar_points"));
-  topics.push_back(std::string("/wheel_speed"));
-  topics.push_back(std::string("/wheel_rear_left_dir"));
-  topics.push_back(std::string("/wheel_rear_right_dir"));
+  topics.push_back(lidar_topic);
+  topics.push_back(imu_topic);
 
   rosbag::View view(bag, rosbag::TopicQuery(topics));
   rosbag::View::iterator it = view.begin();
+
+  KDBindings::Signal<sensor_msgs::PointCloud2ConstPtr&> cloud_signal;
+  KDBindings::Signal<sensor_msgs::ImuConstPtr&> imu_signal;
+
+  cloud_signal.connect(&dlio::OdomNode::callbackPointCloud, &odomNode);
+  imu_signal.connect(&dlio::OdomNode::callbackImu, &odomNode);
+  odomNode.odom_signal.connect(&pgo::MapOptimization::laserOdometryHandler, &pgoMapOpt);
+  odomNode.loop_cloud_signal.connect(&pgo::MapOptimization::laserCloudFullResHandler, &pgoMapOpt);
+  odomNode.keyframe_signal.connect([&](const nav_msgs::Odometry::ConstPtr& odom_msg, const sensor_msgs::PointCloud2ConstPtr& cloud_msg) {
+    float pose[6];
+    pose[0] = odom_msg->pose.pose.position.x;
+    pose[1] = odom_msg->pose.pose.position.y;
+    pose[2] = odom_msg->pose.pose.position.z;
+    Eigen::Quaterniond quat(odom_msg->pose.pose.orientation.w, odom_msg->pose.pose.orientation.x,
+    odom_msg->pose.pose.orientation.y, odom_msg->pose.pose.orientation.z);
+    auto rot = quat.toRotationMatrix().eulerAngles(0,1,2);
+    pose[3] = rot[0];
+    pose[4] = rot[1];
+    pose[5] = rot[2];
+    pcl::PointCloud<pcl::PointXYZI>::Ptr pcs(new pcl::PointCloud<pcl::PointXYZI>());
+    // pcl::fromROSMsg(*cloud_msg, *pcs);
+    mappingkeyframes[0] = std::make_shared<InteractiveKeyFrame>(*pcs, pose);
+  });
   
   int keycount = 0;
   mapOpt.startLoopClosure();

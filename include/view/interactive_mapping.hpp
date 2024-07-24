@@ -46,6 +46,9 @@ public:
   bool stop_mapping();
   void mapping();
 
+  void set_lidar_topic(std::string topic_name) {lidar_topic = topic_name;}
+  void set_imu_topic(std::string topic_name) {imu_topic = topic_name;}
+
   std::unordered_map<long, InteractiveKeyFrame::Ptr> mappingkeyframes;
   std::unique_ptr<InformationMatrixCalculator> inf_calclator;
 
@@ -58,6 +61,9 @@ private:
   g2o::VertexSE3* anchor_node;
   g2o::EdgeSE3* anchor_edge;
   g2o::VertexPlane* floor_node;
+
+  std::string lidar_topic;
+  std::string imu_topic;
 };
 
 #endif
